@@ -48,8 +48,6 @@
 #include "huffman.h"
 #include "LzmaEnc.h"
 #include "LzmaDec.h"
-#include "md5.h"
-#include "sha1.h"
 #include "zlib.h"
 
 #define TRUE 1
@@ -59,6 +57,21 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 #define SHA1_DIGEST_SIZE 20
+
+typedef struct {
+	uint8_t data[64];
+	uint16_t datalen;
+	uint64_t bitlen;
+	uint16_t state[5];
+	uint16_t k[4];
+} SHA1_CTX;
+
+typedef struct {
+    uint8_t data[64];
+    uint16_t datalen;
+    uint64_t bitlen;
+    uint16_t state[4];
+} MD5_CTX;
 
 /***************************************************************************
     DEBUGGING
