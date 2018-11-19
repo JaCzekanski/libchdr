@@ -724,10 +724,7 @@ chd_error cdfl_codec_init(void *codec, uint32_t hunkbytes)
 	if (hunkbytes % CD_FRAME_SIZE != 0)
 		return CHDERR_CODEC_ERROR;
 
-	/* determine whether we want native or swapped samples */
-	uint16_t native_endian = 0;
-	*(uint8_t *)(&native_endian) = 1;
-	cdfl->swap_endian = (native_endian & 1);
+	cdfl->swap_endian = 0;
 
 	/* init the inflater */
 	cdfl->inflater.next_in = (Bytef *)cdfl; /* bogus, but that's ok */
@@ -778,7 +775,11 @@ chd_error cdfl_codec_decompress(void *codec, const uint8_t *src, uint32_t comple
 	cdfl->inflater.next_out = &cdfl->buffer[frames * CD_MAX_SECTOR_DATA];
 	cdfl->inflater.avail_out = frames * CD_MAX_SUBCODE_DATA;
 	cdfl->inflater.total_out = 0;
-	int zerr = inflateReset(&cdfl->inflater);
+	int zerr = inflateEnd(&cdfl->inflater);
+	if (zerr != Z_OK)
+		return CHDERR_DECOMPRESSION_ERROR;
+
+	zerr = inflateInit2(&cdfl->inflater, -MAX_WBITS);
 	if (zerr != Z_OK)
 		return CHDERR_DECOMPRESSION_ERROR;
 
@@ -2375,7 +2376,11 @@ static chd_error zlib_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	data->inflater.next_out = (Bytef *)dest;
 	data->inflater.avail_out = destlen;
 	data->inflater.total_out = 0;
-	zerr = inflateReset(&data->inflater);
+	zerr = inflateEnd(&data->inflater);
+	if (zerr != Z_OK)
+		return CHDERR_DECOMPRESSION_ERROR;
+
+	zerr = inflateInit2(&data->inflater, -MAX_WBITS);
 	if (zerr != Z_OK)
 		return CHDERR_DECOMPRESSION_ERROR;
 
