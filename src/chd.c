@@ -775,11 +775,7 @@ chd_error cdfl_codec_decompress(void *codec, const uint8_t *src, uint32_t comple
 	cdfl->inflater.next_out = &cdfl->buffer[frames * CD_MAX_SECTOR_DATA];
 	cdfl->inflater.avail_out = frames * CD_MAX_SUBCODE_DATA;
 	cdfl->inflater.total_out = 0;
-	int zerr = inflateEnd(&cdfl->inflater);
-	if (zerr != Z_OK)
-		return CHDERR_DECOMPRESSION_ERROR;
-
-	zerr = inflateInit2(&cdfl->inflater, -MAX_WBITS);
+	int zerr = inflateReset(&cdfl->inflater);
 	if (zerr != Z_OK)
 		return CHDERR_DECOMPRESSION_ERROR;
 
@@ -2376,11 +2372,7 @@ static chd_error zlib_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	data->inflater.next_out = (Bytef *)dest;
 	data->inflater.avail_out = destlen;
 	data->inflater.total_out = 0;
-	zerr = inflateEnd(&data->inflater);
-	if (zerr != Z_OK)
-		return CHDERR_DECOMPRESSION_ERROR;
-
-	zerr = inflateInit2(&data->inflater, -MAX_WBITS);
+	zerr = inflateReset(&data->inflater);
 	if (zerr != Z_OK)
 		return CHDERR_DECOMPRESSION_ERROR;
 
